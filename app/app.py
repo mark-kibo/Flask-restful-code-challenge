@@ -132,7 +132,50 @@ class PowerById(Resource):
 api.add_resource(PowerById, "/powers/<int:id>")
 
 
-# class HeroPowers(Resource)
+class HeroPowers(Resource):
+    def post(self):
+        data=request.get_json()
+        hero_power=HeroPower( 
+            strength = data["strength"], 
+            power_id= data['power_id'],
+            hero_id= data['hero_id'])
+        
+        try:
+            db.session.add(hero_power)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            return make_response(
+                {
+  "errors": ["validation errors"]
+}, 400
+            )
+         # Retrieve the associated Hero data
+        hero = Hero.query.get(data['hero_id'])
 
+        if not hero:
+            # Handle the case where the associated Hero does not exist
+            return make_response({"error": "Associated Hero not found"}, 404)
+
+        powers = []
+        for hero_power in hero.hero_powers:
+            power_dict = {
+                "id": hero_power.power.id,
+                "name": hero_power.power.name,
+                "description": hero_power.power.description
+            }
+            powers.append(power_dict)
+
+        # Build a response JSON with Hero data
+        response_data = {
+            "hero_id": hero.id,
+            "hero_name": hero.name,
+            "hero_super_name": hero.super_name,
+            "hero_powers": powers
+        }
+
+        return make_response(jsonify(response_data), 201)
+        
+api.add_resource(HeroPowers, "/hero_powers")
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

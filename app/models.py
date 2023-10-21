@@ -52,4 +52,12 @@ class HeroPower(db.Model, SerializerMixin):
     hero = db.relationship('Hero', back_populates='hero_powers')
     power = db.relationship('Power', back_populates='power_heroes')
 
+    def serialize(self):
+        return {
+            "id": self.id,
+            "strength": self.strength,
+            "power_id": self.power_id,
+            "hero_id": self.hero_id
+            # Include any other attributes you want to include in the serialization
+        }
 # add any models you may need. 
